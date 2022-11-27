@@ -1,11 +1,11 @@
-#Install dependencies
-***
+# Install dependencies
+---
 go mod tidy
 
-#Run the server
-***
+# Run the server
+---
 go run main.go
 
-#Important
-***
+# Important
+---
 Change the db url in function getConnection from repository/common.go
