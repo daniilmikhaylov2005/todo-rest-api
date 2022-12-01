@@ -72,15 +72,17 @@ func SignIn(c echo.Context) error {
 	userDb, err := repository.FindUserByUsername(user.Username)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, response{
-			Status: "Error while selecting user",
+			Status: err.Error(),
 		})
 	}
 
-	if CheckPasswordHash(user.Password, userDb.Password) {
+	if !CheckPasswordHash(user.Password, userDb.Password) {
 		return c.JSON(http.StatusBadRequest, response{
 			Status: "Wrong password",
 		})
 	}
+
+	user.Role = userDb.Role
 
 	token, err := CreateToken(user)
 	if err != nil {

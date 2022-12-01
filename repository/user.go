@@ -21,5 +21,16 @@ func InsertUser(user models.User) (string, error) {
 }
 
 func FindUserByUsername(username string) (models.User, error) {
-	return models.User{}, nil
+	db := getConnection()
+	defer db.Close()
+
+	var user models.User
+
+	query := `SELECT * FROM users WHERE username=$1`
+	row := db.QueryRow(query, username)
+
+	if err := row.Scan(&user.ID, &user.Username, &user.Name, &user.Role, &user.Password); err != nil {
+		return models.User{}, err
+	}
+	return user, nil
 }

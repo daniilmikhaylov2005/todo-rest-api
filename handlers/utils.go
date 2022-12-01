@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type userClaims struct {
+type UserClaims struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
@@ -45,7 +45,7 @@ func CreateToken(user models.User) (string, error) {
 	if err := godotenv.Load(".env"); err != nil {
 		return "", err
 	}
-	claims := &userClaims{
+	claims := &UserClaims{
 		Username: user.Username,
 		Password: user.Password,
 		Role:     user.Role,

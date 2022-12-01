@@ -2,11 +2,9 @@ package main
 
 import (
 	"github.com/daniilmikhaylov2005/crudTodo/handlers"
-	"github.com/joho/godotenv"
+	m "github.com/daniilmikhaylov2005/crudTodo/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"log"
-	"os"
 )
 
 func main() {
@@ -14,17 +12,15 @@ func main() {
 
 	api := e.Group("/api")
 
-	auth := api.Group("/auth")
+	auth := e.Group("/auth")
 	auth.POST("/signin", handlers.SignIn)
 	auth.POST("/signup", handlers.SignUp)
 
-	if err := godotenv.Load(".env"); err != nil {
-		log.Fatalf("%v\n", err)
+	config := middleware.JWTConfig{
+		ParseTokenFunc: m.ParseToken,
 	}
 
-	jwtKey := os.Getenv("SIGNING_KEY")
-
-	api.Use(middleware.JWT([]byte(jwtKey)))
+	api.Use(middleware.JWTWithConfig(config))
 
 	api.GET("/todo", handlers.GetAllTodos)
 	api.POST("/todo", handlers.CreateTodo)
