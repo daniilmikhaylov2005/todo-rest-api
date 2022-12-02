@@ -12,13 +12,6 @@ import (
 	"time"
 )
 
-type UserClaims struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
-	jwt.RegisteredClaims
-}
-
 func errorResponse(c echo.Context, err error) error {
 	if err.Error() == "sql: no rows in result set" {
 		return c.JSON(http.StatusNotFound, response{
@@ -45,7 +38,7 @@ func CreateToken(user models.User) (string, error) {
 	if err := godotenv.Load(".env"); err != nil {
 		return "", err
 	}
-	claims := &UserClaims{
+	claims := &models.UserClaims{
 		Username: user.Username,
 		Password: user.Password,
 		Role:     user.Role,

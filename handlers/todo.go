@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/daniilmikhaylov2005/crudTodo/middleware"
 	"github.com/daniilmikhaylov2005/crudTodo/models"
 	"github.com/daniilmikhaylov2005/crudTodo/repository"
 	"github.com/labstack/echo/v4"
@@ -30,6 +31,21 @@ func CreateTodo(c echo.Context) error {
 			Status: "Can't create todo with this data",
 		})
 		return err
+	}
+
+	// check role in jwt token claims
+	claims, err := middleware.GetClaimsFromJWT(c)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error with jwt claims, %v", err),
+		})
+	}
+
+	if claims.Role != "admin" {
+		return c.JSON(http.StatusBadRequest, response{
+			Status: fmt.Sprintf("Only admin can create todo!"),
+		})
 	}
 
 	recievedId := repository.CreateTodo(todo)
@@ -68,6 +84,21 @@ func UpdateTodo(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, response{
 			Status: "Unable to convert id to string",
+		})
+	}
+
+	// check role in jwt token claims
+	claims, err := middleware.GetClaimsFromJWT(c)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error with jwt claims, %v", err),
+		})
+	}
+
+	if claims.Role != "admin" {
+		return c.JSON(http.StatusBadRequest, response{
+			Status: fmt.Sprintf("Only admin can update todo!"),
 		})
 	}
 
@@ -111,6 +142,21 @@ func DeleteTodo(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, response{
 			Status: "Unable to convert id to string",
+		})
+	}
+
+	// check role in jwt token claims
+	claims, err := middleware.GetClaimsFromJWT(c)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error with jwt claims, %v", err),
+		})
+	}
+
+	if claims.Role != "admin" {
+		return c.JSON(http.StatusBadRequest, response{
+			Status: fmt.Sprintf("Only admin can delete todo!"),
 		})
 	}
 
