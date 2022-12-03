@@ -10,6 +10,19 @@ go run main.go
 
 Change the db url in function getConnection from repository/common.go
 
+```yaml
+"postgres://user:password@localhost:5432/dbname?sslmode=disable"
+```
+
+Also need to create .env file
+
+Example:
+
+```yaml
+SIGNING_KEY = Your_secret_key_for_jwt_token
+```
+
+
 # API
 
 ## Endpoints:handlerName:Method
