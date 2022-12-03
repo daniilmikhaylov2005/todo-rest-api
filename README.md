@@ -44,7 +44,7 @@ username and password can't be empty
 **return**
 
 ```yaml
-"id: "6",
+"id": "6",
 "status": "User created"
 ```
 
@@ -160,3 +160,19 @@ role from jwt token and id param from url
 ```yaml
 "status": "todo with id {id} deleted"
 ```
+
+# SQL TABLES
+
+>users
+
+| id | username              | name | role  | password                                          |
+|----|-----------------------|------|-------|---------------------------------------------------|
+| 1  | anonym                | idk  | user  | adpoaspdoajpoqwjfoiwh12312po4j1ojiojopifdsjfpsdoi |
+| 2  | canCreateUpdateDelete | Sam  | admin | dasplkdasp[dkaspdkpaosdkopas                      |
+
+> todos
+
+| id | title          | done | userid |
+|----|----------------|------|--------|
+| 1  | go to shop     | f    | 2      |
+| 2  | hack something | t    | 1      |
