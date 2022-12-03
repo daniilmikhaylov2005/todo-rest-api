@@ -1,3 +1,5 @@
+You must have go and postgresql installed
+
 # Install dependencies
 go mod tidy
 
