@@ -72,7 +72,13 @@ func CreateTodo(c echo.Context) error {
 		})
 	}
 
-	recievedId := repository.CreateTodo(todo, user.ID)
+	recievedId, err := repository.CreateTodo(todo, user.ID)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error while create user. %v", err),
+		})
+	}
 
 	todo.ID = recievedId
 	todo.UserID = user.ID
@@ -129,6 +135,13 @@ func UpdateTodo(c echo.Context) error {
 		})
 	}
 
+	if err := c.Bind(&todo); err != nil {
+		c.JSON(http.StatusBadRequest, response{
+			Status: "Can't update todo with this data",
+		})
+		return err
+	}
+
 	// check role in jwt token claims
 	claims, err := middleware.GetClaimsFromJWT(c)
 
@@ -142,13 +155,6 @@ func UpdateTodo(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, response{
 			Status: fmt.Sprintf("Only admin can update todo!"),
 		})
-	}
-
-	if err := c.Bind(&todo); err != nil {
-		c.JSON(http.StatusBadRequest, response{
-			Status: "Can't update todo with this data",
-		})
-		return err
 	}
 
 	//Get User
@@ -171,17 +177,15 @@ func UpdateTodo(c echo.Context) error {
 	if strings.TrimSpace(todo.Title) == "" {
 		todo.Title = recievedTodo.Title
 	}
-	if todo.Done == false {
-		todo.Done = recievedTodo.Done
-	}
 
-	err = repository.UpdateTodo(id, user.ID, todo)
+	recievedId, err := repository.UpdateTodo(id, user.ID, todo)
 
 	if err != nil {
 		return errorResponse(c, err)
 	}
 
-	todo.ID = id
+	todo.ID = recievedId
+	todo.UserID = user.ID
 
 	return c.JSON(http.StatusAccepted, todo)
 }

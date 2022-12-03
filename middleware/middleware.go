@@ -40,7 +40,6 @@ func ParseToken(auth string, c echo.Context) (interface{}, error) {
 	}
 	token, err := jwt.ParseWithClaims(auth, &models.UserClaims{}, keyFunc)
 	if err != nil {
-		fmt.Println(1.5)
 		return nil, err
 	}
 	if !token.Valid {
