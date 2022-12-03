@@ -40,7 +40,6 @@ func CreateToken(user models.User) (string, error) {
 	}
 	claims := &models.UserClaims{
 		Username: user.Username,
-		Password: user.Password,
 		Role:     user.Role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),

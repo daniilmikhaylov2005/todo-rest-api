@@ -14,7 +14,6 @@ type User struct {
 
 type UserClaims struct {
 	Username string `json:"username"`
-	Password string `json:"password"`
 	Role     string `json:"role"`
 	jwt.RegisteredClaims
 }

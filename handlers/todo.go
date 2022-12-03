@@ -18,7 +18,23 @@ type response struct {
 func GetAllTodos(c echo.Context) error {
 	var todos []models.Todo
 
-	todos = repository.GetAllTodos()
+	// check role in jwt token claims
+	claims, err := middleware.GetClaimsFromJWT(c)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error with jwt claims, %v", err),
+		})
+	}
+
+	//Get user
+	user, err := repository.FindUserByUsername(claims.Username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error while find user. %v", err),
+		})
+	}
+
+	todos = repository.GetAllTodos(user.ID)
 
 	return c.JSON(http.StatusOK, todos)
 }
@@ -48,9 +64,18 @@ func CreateTodo(c echo.Context) error {
 		})
 	}
 
-	recievedId := repository.CreateTodo(todo)
+	//Get User
+	user, err := repository.FindUserByUsername(claims.Username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error while find user. %v", err),
+		})
+	}
+
+	recievedId := repository.CreateTodo(todo, user.ID)
 
 	todo.ID = recievedId
+	todo.UserID = user.ID
 
 	return c.JSON(http.StatusCreated, todo)
 }
@@ -66,7 +91,24 @@ func GetTodoById(c echo.Context) error {
 		})
 	}
 
-	todo, err = repository.GetTodoById(id)
+	// check role in jwt token claims
+	claims, err := middleware.GetClaimsFromJWT(c)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error with jwt claims, %v", err),
+		})
+	}
+
+	//Get User
+	user, err := repository.FindUserByUsername(claims.Username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error while find user. %v", err),
+		})
+	}
+
+	todo, err = repository.GetTodoById(id, user.ID)
 
 	if err != nil {
 		return errorResponse(c, err)
@@ -109,8 +151,16 @@ func UpdateTodo(c echo.Context) error {
 		return err
 	}
 
+	//Get User
+	user, err := repository.FindUserByUsername(claims.Username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error while find user. %v", err),
+		})
+	}
+
 	// get todo to check json data
-	recievedTodo, err := repository.GetTodoById(id)
+	recievedTodo, err := repository.GetTodoById(id, user.ID)
 
 	if err != nil {
 		return errorResponse(c, err)
@@ -125,7 +175,7 @@ func UpdateTodo(c echo.Context) error {
 		todo.Done = recievedTodo.Done
 	}
 
-	err = repository.UpdateTodo(id, todo)
+	err = repository.UpdateTodo(id, user.ID, todo)
 
 	if err != nil {
 		return errorResponse(c, err)
@@ -160,7 +210,15 @@ func DeleteTodo(c echo.Context) error {
 		})
 	}
 
-	deletedId, err := repository.DeleteTodo(id)
+	//Get User
+	user, err := repository.FindUserByUsername(claims.Username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response{
+			Status: fmt.Sprintf("Error while find user. %v", err),
+		})
+	}
+
+	deletedId, err := repository.DeleteTodo(id, user.ID)
 
 	if err != nil {
 		return errorResponse(c, err)

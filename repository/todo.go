@@ -5,12 +5,12 @@ import (
 	"log"
 )
 
-func GetAllTodos() []models.Todo {
+func GetAllTodos(userId int) []models.Todo {
 	db := getConnection()
 	defer db.Close()
 
-	query := `SELECT * FROM todos`
-	rows, err := db.Query(query)
+	query := `SELECT * FROM todos WHERE userid=$1`
+	rows, err := db.Query(query, userId)
 
 	if err != nil {
 		log.Fatal(err)
@@ -23,7 +23,7 @@ func GetAllTodos() []models.Todo {
 	for rows.Next() {
 		var todo models.Todo
 
-		if err := rows.Scan(&todo.ID, &todo.Title, &todo.Done); err != nil {
+		if err := rows.Scan(&todo.ID, &todo.Title, &todo.Done, &todo.UserID); err != nil {
 			log.Fatal(err)
 		}
 
@@ -34,40 +34,40 @@ func GetAllTodos() []models.Todo {
 
 }
 
-func CreateTodo(todo models.Todo) int {
+func CreateTodo(todo models.Todo, userId int) int {
 	db := getConnection()
 	defer db.Close()
 
 	var id int
 
-	query := `INSERT INTO todos (title, done) VALUES ($1, $2) RETURNING ID`
+	query := `INSERT INTO todos (title, done, userid) VALUES ($1, $2, $3) RETURNING ID`
 	row := db.QueryRow(query, todo.Title, todo.Done)
 	row.Scan(&id)
 
 	return id
 }
 
-func GetTodoById(id int) (models.Todo, error) {
+func GetTodoById(id, userId int) (models.Todo, error) {
 	db := getConnection()
 	defer db.Close()
 
 	var todo models.Todo
 
-	query := `SELECT * FROM todos WHERE id=$1`
-	row := db.QueryRow(query, id)
-	if err := row.Scan(&todo.ID, &todo.Title, &todo.Done); err != nil {
+	query := `SELECT * FROM todos WHERE id=$1 AND userid=$2`
+	row := db.QueryRow(query, id, userId)
+	if err := row.Scan(&todo.ID, &todo.Title, &todo.Done, &todo.UserID); err != nil {
 		return todo, err
 	}
 
 	return todo, nil
 }
 
-func UpdateTodo(id int, todo models.Todo) error {
+func UpdateTodo(id, userId int, todo models.Todo) error {
 	db := getConnection()
 	defer db.Close()
 
-	query := `UPDATE todos SET title=$1, done=$2 WHERE id=$3`
-	_, err := db.Exec(query, todo.Title, todo.Done, id)
+	query := `UPDATE todos SET title=$1, done=$2 WHERE id=$3 AND userid=$4`
+	_, err := db.Exec(query, todo.Title, todo.Done, id, userId)
 	if err != nil {
 		return err
 	}
@@ -75,14 +75,18 @@ func UpdateTodo(id int, todo models.Todo) error {
 	return nil
 }
 
-func DeleteTodo(id int) (int, error) {
+func DeleteTodo(todoId, userId int) (int, error) {
 	db := getConnection()
 	defer db.Close()
 
-	query := `DELETE FROM todos WHERE id=$1`
-	_, err := db.Exec(query, id)
-	if err != nil {
-		return 0, nil
+	var id int
+
+	query := `DELETE FROM todos WHERE id=$1 AND userid=$2 RETURNING id`
+	row := db.QueryRow(query, todoId, userId)
+
+	if err := row.Scan(&id); err != nil {
+		return 0, err
 	}
+
 	return id, nil
 }
